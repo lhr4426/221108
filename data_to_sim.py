@@ -23,7 +23,7 @@ class PEx(BehaviorModelExecutor):
 
     def ext_trans(self,port, msg):
         if port == "start":
-            print("please input generate interval (second)")
+            print("Please input generate interval (second)")
             gen_time = int(input())
             self.set_gen_time(gen_time)
             print(f"Simulation Start")
