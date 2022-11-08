@@ -12,7 +12,7 @@ if __name__ == '__main__':
 		from . import loc_to_data
 
 
-class PEx(BehaviorModelExecutor):
+class weather_model(BehaviorModelExecutor):
     def __init__(self, instance_time, destruct_time, name, engine_name):
         BehaviorModelExecutor.__init__(self, instance_time, destruct_time, name, engine_name)
         self.init_state("Wait")
@@ -50,7 +50,7 @@ ss = SystemSimulator()
 
 ss.register_engine("first", "REAL_TIME", 1)
 ss.get_engine("first").insert_input_port("start")
-gen = PEx(0, Infinite, "Gen", "first")
+gen = weather_model(0, Infinite, "Gen", "first")
 ss.get_engine("first").register_entity(gen)
 ss.get_engine("first").coupling_relation(None, "start", gen, "start")
 ss.get_engine("first").insert_external_event("start", None)
