@@ -17,23 +17,32 @@ class PEx(BehaviorModelExecutor):
         BehaviorModelExecutor.__init__(self, instance_time, destruct_time, name, engine_name)
         self.init_state("Wait")
         self.insert_state("Wait", Infinite)
-        self.insert_state("Generate", 30)
+        self.insert_state("Generate", 1)
 
         self.insert_input_port("start")
 
     def ext_trans(self,port, msg):
         if port == "start":
+            print("please input generate interval (second)")
+            gen_time = int(input())
+            self.set_gen_time(gen_time)
             print(f"Simulation Start")
-            print(f"{datetime.datetime.now()} : {loc_to_data.now_weather()[0]}°C, {loc_to_data.now_weather()[1]}%")
+            now = datetime.datetime.now()
+            print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} : {loc_to_data.now_weather()[0]}°C, {loc_to_data.now_weather()[1]}%")
             self._cur_state = "Generate"
 
     def output(self):
-        print(f"{datetime.datetime.now()} : {loc_to_data.now_weather()[0]}°C, {loc_to_data.now_weather()[1]}%")
+        now = datetime.datetime.now()
+        print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} : {loc_to_data.now_weather()[0]}°C, {loc_to_data.now_weather()[1]}%")
         return None
         
     def int_trans(self):
         if self._cur_state == "Generate":
             self._cur_state = "Generate"
+
+    def set_gen_time(self, gen_time):
+        self.update_state("Generate", gen_time)
+
 
 
 ss = SystemSimulator()
