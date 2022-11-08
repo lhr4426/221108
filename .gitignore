@@ -1,3 +1,5 @@
 apikey.json
 
 GeoLite2-City_20221101/
+
+__pycache__/
