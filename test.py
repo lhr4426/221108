@@ -45,16 +45,11 @@ class timer(BehaviorModelExecutor):
         if port == "start":
             print("Please input generate interval (second)")
             gen_time = int(input())
-            self.set_gen_time(gen_time)
-            print(f"Simulation Start")
-            now = datetime.datetime.now()
-            now_weather = get_weather()
-            print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} | City : {now_weather[0]} | Temperature : {now_weather[1]}°C | Humidity : {now_weather[2]}% | DI : {now_weather[3]}")
             self._cur_state = "Ringing"
+            self.set_gen_time(gen_time)
 
     def output(self) :
-        msg = SysMessage(self.get_name(), "alarm")
-        return msg
+        return SysMessage(self.get_name(), "alarm")
         
     def int_trans(self):
         if self._cur_state == "Ringing":
@@ -62,7 +57,6 @@ class timer(BehaviorModelExecutor):
 
     def set_gen_time(self, gen_time):
         self.update_state("Ringing", gen_time)
-
 
 
 class take_weather (BehaviorModelExecutor):
@@ -74,6 +68,9 @@ class take_weather (BehaviorModelExecutor):
         self.insert_state("Weather", 1)
 
         self.insert_input_port("Ring")
+        self.insert_output_port("Very_high_di")
+        self.insert_output_port("High_di")
+
 
     def ext_trans(self,port, msg):
         if port == "Ring":
@@ -81,13 +78,51 @@ class take_weather (BehaviorModelExecutor):
 
     def output(self):
         now = datetime.datetime.now()
-        now_weather = get_weather()
+        # now_weather = get_weather()
+        now_weather = ['hey', 20, 30, 75]
         print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} | City : {now_weather[0]} | Temperature : {now_weather[1]}°C | Humidity : {now_weather[2]}% | DI : {now_weather[3]}")
-        return None
-        
+
+        if now_weather[3] >= 80 :
+            msg = SysMessage(self.get_name(), "Very_high_di")
+            return msg 
+        elif now_weather[3] >= 75 :
+            msg = SysMessage(self.get_name(), "High_di")
+            return msg
+
+   
     def int_trans(self):
         if self._cur_state == "Weather":
             self._cur_state = "Wait"
+
+class check_di (BehaviorModelExecutor):
+    def __init__(self, instance_time, destruct_time, name, engine_name):
+        BehaviorModelExecutor.__init__(self, instance_time, destruct_time, name, engine_name)
+
+        self.init_state("wait")
+        self.insert_state("wait", Infinite)
+        self.insert_state("v-h", 1)
+        self.insert_state("h", 1)
+
+        self.insert_input_port("very_high_di")
+        self.insert_input_port("high_di")
+    
+    def ext_trans(self, port, msg) :
+        if port == "very_high_di" :
+            self._cur_state = "v-h"
+        if port == "high_di" :
+            self._cur_state = "h"
+            
+    def output(self):
+        if self._cur_state == "v-h" : print("Very-High")
+        if self._cur_state == "h" : print("High")
+        return None
+
+    def int_trans(self) :
+        if self._cur_state == "v-h" :
+            self._cur_state = "wait"
+        if self._cur_state == "h" :
+            self._cur_state = "wait"
+    
 
 # System Simulator Initialization
 ss = SystemSimulator()
@@ -96,11 +131,18 @@ first.insert_input_port("start")
 
 main_timer = timer(0, Infinite, "timer", "first")
 main_weather = take_weather(0, Infinite, "weather", "first")
+main_check = check_di(0, Infinite, "check", "first")
+# h_di = high_di(0, Infinite, "highDI", "first")
 
 first.register_entity(main_weather)
 first.register_entity(main_timer)
+first.register_entity(main_check)
+# first.register_entity(h_di)
 
 first.coupling_relation(None, first.start, main_timer, main_timer.start)
 first.coupling_relation(main_timer, main_timer.alarm, main_weather, main_weather.Ring)
+first.coupling_relation(main_weather, main_weather.Very_high_di, main_check, main_check.very_high_di)
+first.coupling_relation(main_weather, main_weather.High_di, main_check, main_check.high_di)
+# first.coupling_relation(main_weather, main_weather.High_di, h_di, h_di.high_temp_in)
 first.insert_external_event(first.start, None)
 first.simulate()
