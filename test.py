@@ -78,8 +78,8 @@ class take_weather (BehaviorModelExecutor):
 
     def output(self):
         now = datetime.datetime.now()
-        # now_weather = get_weather()
-        now_weather = ['hey', 20, 30, 75]
+        now_weather = get_weather()
+        # now_weather = ['hey', 20, 30, 75]
         print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} | City : {now_weather[0]} | Temperature : {now_weather[1]}°C | Humidity : {now_weather[2]}% | DI : {now_weather[3]}")
 
         if now_weather[3] >= 80 :
